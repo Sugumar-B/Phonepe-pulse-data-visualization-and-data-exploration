@@ -342,94 +342,165 @@ def top_user_plot_2(df,state):
                             color_continuous_scale= px.colors.sequential.Magenta)
     st.plotly_chart(fig_top_plot_1)
 
-def ques1():
-    brand= Aggre_user[["Brands","Transaction_count"]]
-    brand1= brand.groupby("Brands")["Transaction_count"].sum().sort_values(ascending=False)
-    brand2= pd.DataFrame(brand1).reset_index()
+def execute_query(query):
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="phonepe_data",
+        port="3306"
+    )
+    cursor = mydb.cursor()
+    cursor.execute(query)
+    data = cursor.fetchall()
+    mydb.close()
+    return data
 
-    fig_brands= px.pie(brand2, values= "Transaction_count", names= "Brands", color_discrete_sequence=px.colors.sequential.dense_r,
+def ques1():
+    
+    query1 = '''SELECT Brands, SUM(Transaction_count) AS Total_Transactions
+                FROM aggregated_user
+
+                GROUP BY Brands
+                ORDER BY Total_Transactions DESC;'''
+    result = execute_query(query1)
+
+    df = pd.DataFrame(result,columns=['Brands','Total_Transactions'])
+    
+  
+
+    fig_brands= px.pie(df, values= "Total_Transactions", names= "Brands", color_discrete_sequence=px.colors.sequential.dense_r,
                        title= "Top Mobile Brands of Transaction_count")
     return st.plotly_chart(fig_brands)
 
 def ques2():
-    lt= Aggre_transaction[["States", "Transaction_amount"]]
-    lt1= lt.groupby("States")["Transaction_amount"].sum().sort_values(ascending= True)
-    lt2= pd.DataFrame(lt1).reset_index().head(10)
+    
+    query2 = '''SELECT States, SUM(Transaction_amount) AS Total_Transaction_amount
+                FROM aggregated_transaction
 
-    fig_lts= px.bar(lt2, x= "States", y= "Transaction_amount",title= "LOWEST TRANSACTION AMOUNT and STATES",
+                GROUP BY States
+                ORDER BY Total_Transaction_amount ASC;'''
+    result = execute_query(query2)
+
+    df = pd.DataFrame(result,columns=['States','Total_Transaction_amount'])
+   
+
+    fig_lts= px.bar(df, x= "States", y= "Total_Transaction_amount",title= "LOWEST TRANSACTION AMOUNT and STATES",
                     color_discrete_sequence= px.colors.sequential.Oranges_r)
     return st.plotly_chart(fig_lts)
 
 def ques3():
-    htd= Map_transaction[["Districts", "Transaction_amount"]]
-    htd1= htd.groupby("Districts")["Transaction_amount"].sum().sort_values(ascending=False)
-    htd2= pd.DataFrame(htd1).head(10).reset_index()
+    query3 = '''SELECT District, SUM(Transaction_amount) AS Total_Amount
+                FROM map_transaction
 
-    fig_htd= px.pie(htd2, values= "Transaction_amount", names= "Districts", title="TOP 10 DISTRICTS OF HIGHEST TRANSACTION AMOUNT",
+                GROUP BY District
+                ORDER BY Total_Amount DESC limit 10;'''
+    result = execute_query(query3)
+
+    df = pd.DataFrame(result,columns=['District','Total_Amount'])
+   
+
+    fig_htd= px.pie(df, values= "Total_Amount", names= "District", title="TOP 10 DISTRICTS OF HIGHEST TRANSACTION AMOUNT",
                     color_discrete_sequence=px.colors.sequential.Emrld_r)
     return st.plotly_chart(fig_htd)
 
 def ques4():
-    htd= Map_transaction[["Districts", "Transaction_amount"]]
-    htd1= htd.groupby("Districts")["Transaction_amount"].sum().sort_values(ascending=True)
-    htd2= pd.DataFrame(htd1).head(10).reset_index()
+    query4 = '''SELECT District, SUM(Transaction_amount) AS Total_Amount
+                FROM map_transaction
 
-    fig_htd= px.pie(htd2, values= "Transaction_amount", names= "Districts", title="TOP 10 DISTRICTS OF LOWEST TRANSACTION AMOUNT",
+                GROUP BY District
+                ORDER BY Total_Amount ASC limit 10;'''
+    result = execute_query(query4)
+
+    df = pd.DataFrame(result,columns=['District','Total_Amount'])
+
+    fig_htd= px.pie(df, values= "Total_Amount", names= "District", title="TOP 10 DISTRICTS OF LOWEST TRANSACTION AMOUNT",
                     color_discrete_sequence=px.colors.sequential.Greens_r)
     return st.plotly_chart(fig_htd)
 
 
 def ques5():
-    sa= Map_user[["States", "AppOpens"]]
-    sa1= sa.groupby("States")["AppOpens"].sum().sort_values(ascending=False)
-    sa2= pd.DataFrame(sa1).reset_index().head(10)
+    query5 = '''SELECT States, SUM(AppOpens) AS Total_Appopens
+                FROM map_user
 
-    fig_sa= px.bar(sa2, x= "States", y= "AppOpens", title="Top 10 States With AppOpens",
+                GROUP BY States
+                ORDER BY Total_Appopens DESC limit 10 ;'''
+    result = execute_query(query5)
+
+    df = pd.DataFrame(result,columns=['States','Total_Appopens'])
+
+    fig_sa= px.bar(df, x= "States", y= "Total_Appopens", title="Top 10 States With AppOpens",
                 color_discrete_sequence= px.colors.sequential.deep_r)
     return st.plotly_chart(fig_sa)
 
 def ques6():
-    sa= Map_user[["States", "AppOpens"]]
-    sa1= sa.groupby("States")["AppOpens"].sum().sort_values(ascending=True)
-    sa2= pd.DataFrame(sa1).reset_index().head(10)
+    query6 = '''SELECT States, SUM(AppOpens) AS Total_Appopens
+                FROM map_user
 
-    fig_sa= px.bar(sa2, x= "States", y= "AppOpens", title="lowest 10 States With AppOpens",
+                GROUP BY States
+                ORDER BY Total_Appopens ASC limit 10 ;'''
+    result = execute_query(query6)
+
+    df = pd.DataFrame(result,columns=['States','Total_Appopens'])
+
+    fig_sa= px.bar(df, x= "States", y= "Total_Appopens", title="Least 10 States With AppOpens",
                 color_discrete_sequence= px.colors.sequential.dense_r)
     return st.plotly_chart(fig_sa)
 
 def ques7():
-    stc= Aggre_transaction[["States", "Transaction_count"]]
-    stc1= stc.groupby("States")["Transaction_count"].sum().sort_values(ascending=True)
-    stc2= pd.DataFrame(stc1).reset_index()
+    query7 = '''SELECT States, SUM(Transaction_count) AS Total_Transactions
+                FROM aggregated_transaction
 
-    fig_stc= px.bar(stc2, x= "States", y= "Transaction_count", title= "STATES WITH LOWEST TRANSACTION COUNT",
+                GROUP BY States
+                ORDER BY Total_Transactions ASC LIMIT 10;'''
+    result = execute_query(query7)
+
+    df = pd.DataFrame(result,columns=['States','Total_Transactions'])
+    
+
+    fig_stc= px.bar(df, x= "States", y= "Total_Transactions", title= "STATES WITH LOWEST TRANSACTION COUNT",
                     color_discrete_sequence= px.colors.sequential.Jet_r)
     return st.plotly_chart(fig_stc)
 
 def ques8():
-    stc= Aggre_transaction[["States", "Transaction_count"]]
-    stc1= stc.groupby("States")["Transaction_count"].sum().sort_values(ascending=False)
-    stc2= pd.DataFrame(stc1).reset_index()
+    query8 = '''SELECT States, SUM(Transaction_count) AS Total_Transactions
+                FROM aggregated_transaction
 
-    fig_stc= px.bar(stc2, x= "States", y= "Transaction_count", title= "STATES WITH HIGHEST TRANSACTION COUNT",
+                GROUP BY States
+                ORDER BY Total_Transactions DESC LIMIT 10;'''
+    result = execute_query(query8)
+
+    df = pd.DataFrame(result,columns=['States','Total_Transactions'])
+    
+
+    fig_stc= px.bar(df, x= "States", y= "Total_Transactions", title= "STATES WITH HIGHEST TRANSACTION COUNT",
                     color_discrete_sequence= px.colors.sequential.Magenta_r)
     return st.plotly_chart(fig_stc)
 
 def ques9():
-    ht= Aggre_transaction[["States", "Transaction_amount"]]
-    ht1= ht.groupby("States")["Transaction_amount"].sum().sort_values(ascending= False)
-    ht2= pd.DataFrame(ht1).reset_index().head(10)
+    query9 = '''SELECT States, SUM(Transaction_amount) AS Total_Amount
+                FROM aggregated_transaction
 
-    fig_lts= px.bar(ht2, x= "States", y= "Transaction_amount",title= "HIGHEST TRANSACTION AMOUNT and STATES",
+                GROUP BY States
+                ORDER BY Total_Amount ASC LIMIT 10;'''
+    result = execute_query(query9)
+
+    df = pd.DataFrame(result,columns=['States','Total_Amount'])
+    
+    fig_lts= px.bar(df, x= "States", y= "Total_Amount",title= "STATES WITH LOWEST TRANSACTION AMOUNT",
                     color_discrete_sequence= px.colors.sequential.Oranges_r)
     return st.plotly_chart(fig_lts)
 
 def ques10():
-    dt= Map_transaction[["Districts", "Transaction_amount"]]
-    dt1= dt.groupby("Districts")["Transaction_amount"].sum().sort_values(ascending=True)
-    dt2= pd.DataFrame(dt1).reset_index().head(50)
+    query10 = '''SELECT District, SUM(Transaction_amount) AS Total_Amount
+                FROM map_transaction
 
-    fig_dt= px.bar(dt2, x= "Districts", y= "Transaction_amount", title= "DISTRICTS WITH LOWEST TRANSACTION AMOUNT",
+                GROUP BY District
+                ORDER BY Total_Amount ASC limit 50;'''
+    result = execute_query(query10)
+
+    df = pd.DataFrame(result,columns=['District','Total_Amount'])
+    fig_dt= px.bar(df, x= "District", y= "Total_Amount", title= "DISTRICTS WITH LOWEST TRANSACTION AMOUNT",
                 color_discrete_sequence= px.colors.sequential.Mint_r)
     return st.plotly_chart(fig_dt)
 
